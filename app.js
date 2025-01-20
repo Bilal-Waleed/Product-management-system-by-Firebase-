@@ -1,7 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { 
-    getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc 
-} from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
 var firebaseConfig = {
     apiKey: "AIzaSyD9UlTCC7QjZXnhruo-VtLjmnQgF8Pbuv8",
@@ -13,84 +11,28 @@ var firebaseConfig = {
     measurementId: "G-ZH5Z3NXZYQ"
 };
 
-var app = initializeApp(firebaseConfig);
-var db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-var productForm = document.getElementById("productForm");
-var productList = document.getElementById("productList");
-
-productForm.addEventListener("submit", async (e) => {
+document.getElementById("productForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    var productName = document.getElementById("productName").value;
-    var category = document.getElementById("category").value;
-    var price = parseFloat(document.getElementById("price").value);
+    const productName = document.getElementById("productName").value;
+    const category = document.getElementById("category").value;
+    const price = parseFloat(document.getElementById("price").value);
+
+    const submitButton = document.querySelector("button[type='submit']");
+    submitButton.disabled = true;
 
     try {
-        await addDoc(collection(db, "products"), {
-            productName,
-            category,
-            price,
-        });
+        await addDoc(collection(db, "products"), { productName, category, price });
 
         console.log("Product added successfully!");
-        productForm.reset();
+        e.target.reset(); 
         fetchProducts();
     } catch (error) {
-        console.error("Error adding product: ", error);
+        console.error("Error adding product:", error);
+    } finally {
+        submitButton.disabled = false;
     }
 });
-
-async function fetchProducts() {
-    productList.innerHTML = "";
-try {
-    const querySnapshot = await getDocs(collection(db, "products"));
-    querySnapshot.forEach((doc) => {
-        const product = doc.data();
-        const li = document.createElement("li");
-
-        li.innerHTML = `
-            <span>Name: ${product.productName}, Category: ${product.category}, Price: $${product.price}</span>
-            <div class="actions">
-                <i class="fas fa-edit" onclick="updateProduct('${doc.id}', '${product.productName}', '${product.category}', ${product.price})"></i>
-                <i class="fas fa-trash" onclick="deleteProduct('${doc.id}')"></i>
-            </div>
-        `;
-        productList.appendChild(li);
-    });
-} catch (error) {
-    console.error("Error fetching products: ", error);
-}
-
-}
-
-
-window.deleteProduct = async (id) => {
-    try {
-        await deleteDoc(doc(db, "products", id));
-        console.log("Product deleted successfully!");
-        fetchProducts();
-    } catch (error) {
-        console.error("Error deleting product: ", error);
-    }
-};
-
-window.updateProduct = async (id, currentName, currentCategory, currentPrice) => {
-    var newName = prompt("Enter new name:", currentName) || currentName;
-    var newCategory = prompt("Enter new category:", currentCategory) || currentCategory;
-    var newPrice = parseFloat(prompt("Enter new price:", currentPrice)) || currentPrice;
-
-    try {
-        await updateDoc(doc(db, "products", id), {
-            productName: newName,
-            category: newCategory,
-            price: newPrice,
-        });
-        console.log("Product updated successfully!");
-        fetchProducts();
-    } catch (error) {
-        console.error("Error updating product: ", error);
-    }
-};
-
-fetchProducts();

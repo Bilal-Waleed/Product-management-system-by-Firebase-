@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./Assets/favicon firebae.png" type="image/png">
+    <title>Firebase CRUD App - Products</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Poppins", sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        header {
+            width: 100%;
+            height: 70px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: rgba(46, 44, 44, 0.7);
+            z-index: 10;
+            position: sticky;
+            top: 0;
+        }
+
+        header .logo {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        header button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        header button:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            padding: 10px 0;
+            background: rgba(46, 44, 44, 0.7);
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .products-container {
+            flex: 1;
+            padding: 90px 20px 60px;
+            width: 100%;
+            overflow-y: auto;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        #productCards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 1200px;
+            box-sizing: border-box;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-card h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .product-card p {
+            font-size: 14px;
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .product-card .actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .product-card button {
+            padding: 8px 15px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .product-card button:hover {
+            background-color: #0056b3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(65, 64, 64, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            max-width: 450px;
+            width: 90%;
+            box-sizing: border-box;
+            color: #fff;
+            position: relative;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 28px;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .modal-content .form-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+            margin-bottom: 7px;
+            box-sizing: border-box;
+        }
+
+        .modal-content input:focus {
+            border-color: #007bff;
+        }
+
+        .modal-content label {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            font-size: 16px;
+            color: #aaa;
+            transition: all 0.2s ease-in-out;
+            pointer-events: none;
+        }
+
+        .modal-content input:focus+label,
+        .modal-content input:not(:placeholder-shown)+label {
+            top: -20px;
+            left: 4px;
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
+
+        #updateModal {
+            display: none;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 18px;
+            color: #fff;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .close:hover {
+            color: #007bff;
+        }
+
+        @media (max-width: 426px){
+            #productCards{
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <video autoplay muted loop>
+        <source src="./Assets/abstract-planet-moewalls-com_2.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <header>
+        <h1 class="logo">CRUD App</h1>
+        <button onclick="window.location.href='index.html'">Add Product</button>
+    </header>
+
+    <div class="products-container">
+        <div id="productCards" class="product-grid"></div>
+    </div>
+
+    <footer>
+        <p>© 2025 Bilal Waleed. All rights reserved.</p>
+    </footer>
+
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Update Product</h2>
+            <form id="updateForm">
+                <div class="form-group">
+                    <input type="text" id="updateProductName" placeholder=" " required>
+                    <label for="updateProductName">Product Name</label>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="updateCategory" placeholder=" " required>
+                    <label for="updateCategory">Category</label>
+                </div>
+                <div class="form-group">
+                    <input type="number" id="updatePrice" placeholder=" " required>
+                    <label for="updatePrice">Price</label>
+                </div>
+                <button type="submit">Update Product</button>
+            </form>
+        </div>
+    </div>
+    <script type="module" src="products.js"></script>
+</body>
+
+</html>
