@@ -71,6 +71,10 @@
             z-index: 10;
         }
 
+        footer p{
+                font-size: 14px;
+            }
+
         .products-container {
             flex: 1;
             padding: 90px 20px 60px;
@@ -251,10 +255,20 @@
             color: #007bff;
         }
 
+        @media (max-width: 769px){
+            .products-container {
+            padding: 50px 20px 60px;
+            }
+        }
+
         @media (max-width: 426px){
             #productCards{
                 display: flex;
                 flex-direction: column;
+            }
+
+            footer p{
+                font-size: 10px;
             }
         }
     </style>
